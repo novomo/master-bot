@@ -1,0 +1,10 @@
+requests
+bs4
+selenium
+pillow
+pyautogui
+scipy
+pynput
+webbrowser
+pyvirtualdisplay
+Xlib

@@ -6,43 +6,43 @@ sudo apt-get install git
 #install pip3
 sudo apt install -y python3-pip
 #install node
-curl -sL https://deb.nodesource.com/setup_15.x -o nodesource_setup.sh
-sudo bash nodesource_setup.sh
-sudo apt-get update
-sudo apt-get install nodejs
-npm install -g yarn
+#curl -sL https://deb.nodesource.com/setup_15.x -o nodesource_setup.sh
+#sudo bash nodesource_setup.sh
+#sudo apt-get update
+#sudo apt-get install nodejs
+#npm install -g yarn
 #install c++
-sudo apt install -y g++
+#sudo apt install -y g++
 #install mpi
-sudo apt-get install -y mpich
+#sudo apt-get install -y mpich
 #install ping server
 
 
-read -p 'Does This Machine Currently have any tasks installed? Y/n: ' newMachine
-if [[ "$newMachine" =~ ^([nN][oO][nN])$ ]]
-then
-  bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/add_machine.sh
-  read -p 'Do you have a ping server Y/n: ' response
-  if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
-  then
-    command = "bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/ping_server.sh"
+#read -p 'Does This Machine Currently have any tasks installed? Y/n: ' newMachine
+#if [[ "$newMachine" =~ ^([nN][oO][nN])$ ]]
+#then
+#  bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/add_machine.sh
+#  read -p 'Do you have a ping server Y/n: ' response
+#  if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+#  then
+#    command = "bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/ping_server.sh"
     #write out current crontab
-    crontab -l > mycron
+#    crontab -l > mycron
     #echo new cron into cron file
-    echo "*/5 * * * * $command" >> mycron
+#    echo "*/5 * * * * $command" >> mycron
     #install new cron file
-    crontab mycron
-    rm mycron
-  fi
-fi
+#    crontab mycron
+#    rm mycron
+#  fi
+#fi
 
-bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/add_task.sh
+#bash $(realpath "$0" | sed 's|\(.*\)/.*|\1|')/add_task.sh
 
 #get linux repo
 while IFS="" read -r p || [ -n "$p" ]
 do
   sudo add-apt-repository $p
-done < install/linux-repos.txt
+done < linux-repos.txt
 #update os
 sudo apt update -y
 #install os packages
@@ -50,20 +50,35 @@ while IFS="" read -r p || [ -n "$p" ]
 do
   sudo apt install -y $p
 done < system.txt
+
+apt install -y libxss1 libappindicator1 libindicator7 openjdk-8-jre-headless xvfb libxi6 libgconf-2-4
+sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
+sudo echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+sudo apt-get -y update
+sudo apt-get -y install google-chrome-stable
+# Versions
+CHROME_DRIVER_VERSION=`curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE`
+wget -N https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/
+unzip ~/chromedriver_linux64.zip -d ~/
+rm ~/chromedriver_linux64.zip
+sudo mv -f ~/chromedriver /usr/local/bin/chromedriver
+sudo chown root:root /usr/local/bin/chromedriver
+sudo chmod 0755 /usr/local/bin/chromedriver
+sudo apt install python3-opencv
 #install python packages
-if [[ -f "install/requirements.txt" ]]; then
-    pip3 install -r requirements.txt
+if [[ -f "requirements.txt" ]]; then
+    pip3 install -r $(realpath "$0" | sed 's|\(.*\)/.*|\1|')requirements.txt
 fi
 #install node modules
-if [[ -f "package.json" ]]; then
-    yarn install
-fi
+#if [[ -f "package.json" ]]; then
+    #yarn install
+#fi
 
-for f in *; do
-    if [[ -d "$f" && ! -L "$f" ]]; then
-        cd $f && git checkout master
-        git branch --set-upstream-to=origin/master master
-        git pull
-        cd ..
-    fi
-done
+#for f in *; do
+    #if [[ -d "$f" && ! -L "$f" ]]; then
+        #cd $f && git checkout master
+        #git branch --set-upstream-to=origin/master master
+        #git pull
+        #cd ..
+    #fi
+#done
