@@ -42,13 +42,19 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Bot():
     def __init__(self, requestBot=False, seleniumBot=False, visualBot=False, headless=False, displayDevice=False,
-                 imagePath=f"{d}/images", extensions=None, openWebsite="https://www.google.com", virualDisplay=False):
+                 imagePath=f"{d}/images", extensions=None, openWebsite="https://www.google.com", virtualDisplay=False, 
+                 showVirtualDisplay=1):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK
 
 
         self.imagePath = imagePath
+        self.visualBot = visualBot
+        self.seleniumBot = seleniumBot
+        self.requestBot = requestBot
+        self.virtualDisplay = virtualDisplay
+        
 
         if requestBot:
             import requests
@@ -58,6 +64,12 @@ class Bot():
             self.headers = {}
             self.session = requests.Session()
 
+        if virtualDisplay:
+            from pyvirtualdisplay import Display
+            self.vDisplay = Display(visible=showVirtualDisplay, size=(1600,900))
+            self.vDisplay.start()
+            
+
         if seleniumBot:
             from selenium import webdriver
             from selenium.webdriver.common.keys import Keys
@@ -66,6 +78,7 @@ class Bot():
             from selenium.webdriver.support import expected_conditions as EC
             from selenium.webdriver.support.ui import WebDriverWait
             self.seleniumBot = True
+            self.By = By
             
 
             options = webdriver.ChromeOptions()
@@ -89,24 +102,12 @@ class Bot():
             self.driver.implicitly_wait(15)
 
         if displayDevice:
-            import pyautogui
             from scipy.io import wavfile
             from pynput.keyboard import Controller
             self.keyboard = Controller()
-            self.hotKey = pyautogui.hotkey
+            
 
-        if virualDisplay:
-            from pyvirtualdisplay import Display
-            import Xlib.display as XlibDisplay
-            from pyautogui import LEFT, MIDDLE, RIGHT
-            from Xlib import X
-            from Xlib.ext.xtest import fake_input
-            import Xlib.XK as XlibXK
-            vDisplay = Display(visible=1, size=(1600,900))
-            vDisplay.start()
-            pyautogui._pyautogui_x11._display = XlibDisplay.Display(
-                            os.environ['DISPLAY']
-                        )
+        
             
         if visualBot:
             self.visualBot = True
@@ -117,35 +118,52 @@ class Bot():
             cache = apt.Cache()
             cache.open()
             if cache["chromium-browser"].is_installed:
-                os.system(f"chromium-browser '{openWebsite}' --load-extension='{extensions}'") if extensions is not None \
+                os.system(f"xvfb-run chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'") if extensions is not None \
                     else webbrowser.get('chromium-browser').open_new(openWebsite)
             elif cache["google-chrome-stable"].is_installed:
-                os.system(f"google-chrome '{openWebsite}' --load-extension={extensions}") if extensions is not None \
+                os.system(f"xvfb-run google-chrome '{openWebsite}' --no-sandbox --load-extension={extensions}") if extensions is not None \
                     else webbrowser.get('google-chrome').open_new(openWebsite)
             else:
                 print("Please install either chrome or chromium on your computer.")
                 sys.exit(1)
+            import pyautogui
+            import Xlib.display as XlibDisplay
+            from pyautogui import LEFT, MIDDLE, RIGHT
+            from Xlib import X
+            from Xlib.ext.xtest import fake_input
+            import Xlib.XK as XlibXK
+            self.hotKey = pyautogui.hotkey
+            pyautogui._pyautogui_x11._display = XlibDisplay.Display(
+                            os.environ['DISPLAY']
+                        )
+            sleep(2)
 
     def __enter__(self):
         return self
 
     def __exit__(self):
         if self.visualBot:
+            os.system('killall chromedriver')
             os.system("killall google-chrome-stable")
             os.system("killall chromium-browser")
             os.system('killall chrome')
             os.system('killall google-chrome')
         if self.seleniumBot:
             self.driver.quit()
+        if self.virtualDisplay:
+            self.vDisplay.stop()
 
     def quit(self):
         if self.visualBot:
+            os.system('killall chromedriver')
             os.system("killall google-chrome-stable")
             os.system("killall chromium-browser")
             os.system('killall chrome')
             os.system('killall google-chrome')
         if self.seleniumBot:
             self.driver.quit()
+        if self.virtualDisplay:
+            self.vDisplay.stop()
 
     '''
     Searchs for an image on the screen
@@ -289,13 +307,13 @@ class Bot():
     def headlessWaitForElement(self, criteia: str, selector: str, by, waitTime: int = 20):
         if criteia == "present":
             return WebDriverWait(self.driver, waitTime).until(
-                EC.presence_of_element_located((by, cssSelector)))
+                EC.presence_of_element_located((by, selector)))
         elif criteia == "visible":
             return WebDriverWait(self.driver, waitTime).until(
-                EC.visibility_of_element_located((by, cssSelector)))
+                EC.visibility_of_element_located((by, selector)))
         elif criteia == "clickable":
             return WebDriverWait(self.driver, waitTime).until(
-                EC.element_to_be_clickable((by, cssSelector)))
+                EC.element_to_be_clickable((by, selector)))
 
     '''
 
@@ -315,10 +333,10 @@ class Bot():
     def headlessWaitForElements(self, criteia: str, selector: str, by, waitTime: int=20):
         if criteia == "present":
             return WebDriverWait(self.driver, waitTime).until(
-                EC.presence_of_all_elements_located((by, cssSelector)))
+                EC.presence_of_all_elements_located((by, selector)))
         elif criteia == "visible":
             return WebDriverWait(self.driver, waitTime).until(
-                EC.visibility_of_all_elements_located((by, cssSelector)))
+                EC.visibility_of_all_elements_located((by, selector)))
 
     '''
 
