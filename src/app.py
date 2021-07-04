@@ -5,6 +5,7 @@ import apt
 import sys
 import logging
 import imp
+from subprocess import Popen, PIPE
 import getpass
 from datetime import datetime
 from time import sleep
@@ -41,20 +42,22 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Bot():
-    def __init__(self, requestBot=False, seleniumBot=False, visualBot=False, headless=False, displayDevice=False,
-                 imagePath=f"{d}/images", extensions=None, openWebsite="https://www.google.com", virtualDisplay=False, 
-                 showVirtualDisplay=1):
+    def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
+        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK
-
+        if showVirtualDisplay > 1:
+            print("showVirtualDisplay can only be 0 or 1")
+            sys.exit(1)
 
         self.imagePath = imagePath
         self.visualBot = visualBot
         self.seleniumBot = seleniumBot
         self.requestBot = requestBot
         self.virtualDisplay = virtualDisplay
-        
+        self.browserProcesses = []
+        self.showVirtualDisplay = showVirtualDisplay
 
         if requestBot:
             import requests
@@ -64,10 +67,37 @@ class Bot():
             self.headers = {}
             self.session = requests.Session()
 
+        if visualBot and not virtualDisplay:
+            from scipy.io import wavfile
+            from pynput.keyboard import Controller
+            self.keyboard = Controller()
+            import pyautogui
+
+
         if virtualDisplay:
             from pyvirtualdisplay import Display
             self.vDisplay = Display(visible=showVirtualDisplay, size=(1600,900))
             self.vDisplay.start()
+        
+
+        if virtualDisplay and visualBot:
+            from scipy.io import wavfile
+            from pynput.keyboard import Controller
+            self.keyboard = Controller()
+            import pyautogui
+            import Xlib.display as XlibDisplay
+            from pyautogui import LEFT, MIDDLE, RIGHT
+            from Xlib import X
+            from Xlib.ext.xtest import fake_input
+            import Xlib.XK as XlibXK
+            self.hotKey = pyautogui.hotkey
+            pyautogui._pyautogui_x11._display = XlibDisplay.Display(
+                            os.environ['DISPLAY']
+                        )
+            sleep(2)
+
+
+
             
 
         if seleniumBot:
@@ -100,13 +130,7 @@ class Bot():
 
             self.driver = webdriver.Chrome(chrome_options=options)
             self.driver.implicitly_wait(15)
-
-        if displayDevice:
-            from scipy.io import wavfile
-            from pynput.keyboard import Controller
-            self.keyboard = Controller()
-            
-
+     
         
             
         if visualBot:
@@ -114,29 +138,7 @@ class Bot():
             from PIL import Image
             import webbrowser
             import cv2
-
-            cache = apt.Cache()
-            cache.open()
-            if cache["chromium-browser"].is_installed:
-                os.system(f"xvfb-run chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'") if extensions is not None \
-                    else webbrowser.get('chromium-browser').open_new(openWebsite)
-            elif cache["google-chrome-stable"].is_installed:
-                os.system(f"xvfb-run google-chrome '{openWebsite}' --no-sandbox --load-extension={extensions}") if extensions is not None \
-                    else webbrowser.get('google-chrome').open_new(openWebsite)
-            else:
-                print("Please install either chrome or chromium on your computer.")
-                sys.exit(1)
-            import pyautogui
-            import Xlib.display as XlibDisplay
-            from pyautogui import LEFT, MIDDLE, RIGHT
-            from Xlib import X
-            from Xlib.ext.xtest import fake_input
-            import Xlib.XK as XlibXK
-            self.hotKey = pyautogui.hotkey
-            pyautogui._pyautogui_x11._display = XlibDisplay.Display(
-                            os.environ['DISPLAY']
-                        )
-            sleep(2)
+            
 
     def __enter__(self):
         return self
@@ -152,6 +154,7 @@ class Bot():
             self.driver.quit()
         if self.virtualDisplay:
             self.vDisplay.stop()
+            os.system('killall Xvfb')
 
     def quit(self):
         if self.visualBot:
@@ -164,6 +167,7 @@ class Bot():
             self.driver.quit()
         if self.virtualDisplay:
             self.vDisplay.stop()
+            os.system('killall Xvfb')
 
     '''
     Searchs for an image on the screen
@@ -462,6 +466,46 @@ class Bot():
         if max_val < precision:
             return [-1, -1]
         return max_loc
+
+
+    def startBrowser(self, extensions: str="", openWebsite: str="https://www.google.com"):
+        cache = apt.Cache()
+        cache.open()
+        if cache["chromium-browser"].is_installed:
+            if self.virtualDisplay:
+                if len(extensions) != 0:
+                    os.system(f"xvfb-run -a chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+                else: 
+                    os.system(f"xvfb-run -a chromium-browser '{openWebsite}' --no-sandbox")
+            elif not self.virtualDisplay:
+                if len(extensions) != 0:
+                    os.system(f"chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+                else: 
+                    os.system(f"chromium-browser '{openWebsite}' --no-sandbox")
+        elif cache["google-chrome-stable"].is_installed:
+            if self.virtualDisplay:
+                if len(extensions) != 0:
+                    os.system(f"xvfb-run -a google-chrome '{openWebsite}' --no-sandbox --load-extension={extensions}")
+                else: 
+                    os.system(f"xvfb-run -a google-chrome '{openWebsite}' --no-sandbox")
+            elif not self.virtualDisplay:
+                if len(extensions) != 0:
+                    os.system(f"google-chrome '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+                else: 
+                    os.system(f"google-chrome '{openWebsite}' --no-sandbox")
+        else:
+            print("Please install either chrome or chromium on your computer.")
+            sys.exit(1)
+
+
+    def stopBrowsers(self, browsers : List[str] = []):
+        for browser in browsers:
+            print(f"kill -9 {browser}")
+            os.system(f"kill -9 {browser}")
+        if self.virtualDisplay:
+            os.system('killall Xvfb')
+
+
 
     '''
 
