@@ -1,3 +1,2 @@
-from app import Bot
-
-BOT = Bot(seleniumBot=True, headless=False)
+import sounddevice as sd
+print(sd.query_devices())

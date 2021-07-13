@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+    <span id='message'></span>
+
+    <button id='saveBtn'>Save</button>
+    
+    <script>
+
+        (function(console){
+          console.save = function(data, filename){
+            if(!data) {
+              console.error('Console.save: No data')
+              return;
+            }
+
+            if(!filename) filename = 'console.json'
+
+            if(typeof data === "object"){
+              data = JSON.stringify(data, undefined, 4)
+            }
+
+            var blob = new Blob([data], {type: 'text/json'}),
+                e    = document.createEvent('MouseEvents'),
+                a    = document.createElement('a')
+
+            a.download = filename
+            a.href = window.URL.createObjectURL(blob)
+            a.dataset.downloadurl =  ['text/json', a.download, a.href].join(':')
+            e.initMouseEvent('click', true, false,
+                             window, 0, 0, 0, 0, 0,
+                             false, false, false, false, 0, null)
+            a.dispatchEvent(e)
+          }
+        })(console)
+        const message = document.querySelector('#message');
+        let masterData = '';
+
+        const SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+        const SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
+        const SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+
+        const grammar = '#JSGF V1.0;'
+
+        const recognition = new SpeechRecognition();
+        const speechRecognitionList = new SpeechGrammarList();
+        speechRecognitionList.addFromString(grammar, 1);
+        recognition.grammars = speechRecognitionList;
+        recognition.continuous = true;
+        recognition.lang = 'en-US';
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        document.body.onclick = function() {
+          recognition.start();
+        }
+
+        recognition.onresult = function(event) {
+              if (event.results[0].isFinal) {
+                message.textContent = event.results[0][0].transcript;
+                masterData = event.results[0][0].transcript;
+                recognition.stop();
+              }
+            }
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+        }
+
+        document.body.onclick = function() {
+          recognition.start();
+        }
+
+        document.querySelector('#saveBtn').onclick = function() {
+            console.save(masterData)
+        }
+
+    </script>
+</body>
+</html>
