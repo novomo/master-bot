@@ -43,8 +43,7 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Bot():
     def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
-        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1,
-        speechRecognition: bool = False, virtualSpeaker: str = '', virtualMic: str = ''):
+        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK
@@ -59,12 +58,6 @@ class Bot():
         self.virtualDisplay = virtualDisplay
         self.browserProcesses = []
         self.showVirtualDisplay = showVirtualDisplay
-        self.virtualSpeaker = virtualSpeaker
-        self.virtualMic = virtualMic
-
-        if speechRecognition and virtualSpeaker1 == '' and virtualMic != '':
-            os.system(f"pacmd set-default-sink '{virtualSpeaker}'")
-            os.system(f"pacmd set-default-source '{virtualMic}'")
 
         if requestBot:
             import requests
@@ -104,6 +97,9 @@ class Bot():
             sleep(2)
 
 
+
+            
+
         if seleniumBot:
             from selenium import webdriver
             from selenium.webdriver.common.keys import Keys
@@ -114,8 +110,26 @@ class Bot():
             self.seleniumBot = True
             self.By = By
             
-            self.loadWebdriver()
-            
+
+            options = webdriver.ChromeOptions()
+            # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+            options.add_argument("--no-sandbox")
+            # chromeOptions.add_argument("--disable-setuid-sandbox")
+
+            options.add_argument("--remote-debugging-port=9222") 
+
+            options.add_argument("--disable-dev-shm-using")
+            # chromeOptions.add_argument("--disable-extensions")
+            # chromeOptions.add_argument("--disable-gpu")
+            # chromeOptions.add_argument("start-maximized")
+            # chromeOptions.add_argument("disable-infobars")
+
+            options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
+            if headless:
+                options.add_argument('--headless')
+
+            self.driver = webdriver.Chrome(chrome_options=options)
+            self.driver.implicitly_wait(15)
      
         
             
@@ -207,27 +221,6 @@ class Bot():
         else:
             return self.session.get(url, json=data, headers=headers, verify=verify) if data != {} else self.session.get(url, headers=headers, verify=verify)
                 
-    def loadWebdriver(self):
-        options = webdriver.ChromeOptions()
-        # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
-        options.add_argument("--no-sandbox")
-        # chromeOptions.add_argument("--disable-setuid-sandbox")
-
-        options.add_argument("--remote-debugging-port=9222") 
-
-        options.add_argument("--disable-dev-shm-using")
-        # chromeOptions.add_argument("--disable-extensions")
-        # chromeOptions.add_argument("--disable-gpu")
-        # chromeOptions.add_argument("start-maximized")
-        # chromeOptions.add_argument("disable-infobars")
-
-        options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
-        if headless:
-            options.add_argument('--headless')
-
-        self.driver = webdriver.Chrome(chrome_options=options)
-        self.driver.implicitly_wait(15)
-
     '''
 
     Obtains requested bs4 soup elements from html
@@ -474,32 +467,36 @@ class Bot():
             return [-1, -1]
         return max_loc
 
+    def startBroserVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
+        if len(extensions) != 0:
+            os.system(f"{browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+        else: 
+            os.system(f"{browser} '{openWebsite}' --no-sandbox")
+
+    def startBrowserNotVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
+        if len(extensions) != 0:
+            os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+        else: 
+            os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox")
+
 
     def startBrowser(self, extensions: str="", openWebsite: str="https://www.google.com"):
         cache = apt.Cache()
         cache.open()
         if cache["chromium-browser"].is_installed:
-            if self.virtualDisplay:
-                if len(extensions) != 0:
-                    os.system(f"xvfb-run -a chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
-                else: 
-                    os.system(f"xvfb-run -a chromium-browser '{openWebsite}' --no-sandbox")
+            if self.virtualDisplay and not self.showVirtualDisplay:
+                startBrowserNotVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+            elif self.virtualDisplay and self.showVirtualDisplay:
+                startBroserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                if len(extensions) != 0:
-                    os.system(f"chromium-browser '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
-                else: 
-                    os.system(f"chromium-browser '{openWebsite}' --no-sandbox")
+                startBroserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
         elif cache["google-chrome-stable"].is_installed:
-            if self.virtualDisplay:
-                if len(extensions) != 0:
-                    os.system(f"xvfb-run -a google-chrome '{openWebsite}' --no-sandbox --load-extension={extensions}")
-                else: 
-                    os.system(f"xvfb-run -a google-chrome '{openWebsite}' --no-sandbox")
+            if self.virtualDisplay and not self.showVirtualDisplay:
+                startBrowserNotVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+            elif self.virtualDisplay and self.showVirtualDisplay:
+                startBroserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                if len(extensions) != 0:
-                    os.system(f"google-chrome '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
-                else: 
-                    os.system(f"google-chrome '{openWebsite}' --no-sandbox")
+                startBroserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
         else:
             print("Please install either chrome or chromium on your computer.")
             sys.exit(1)
@@ -695,23 +692,5 @@ class Bot():
         self.typeText(address)
         pyautogui.press('enter')
 
-    def setVirtualAudioDevices(self, mic: str = '', speaker: str = ''):
-        if mic != '':
-            os.system(f"pacmd set-default-source '{virtualMic}'")
-        if speaker != '':
-            os.system(f"pacmd set-default-sink '{virtualSpeaker}'")
-
-
-    def transcriptAudio(self, file: str):
-
-        #open selenium with html file.
-        self.loadWebdriver()
-        self.driver.get(f"{os.path.dirname(os.path.abspath(__file__))}/transcriptor.html")
-        #click record button
-        self.driver.find_element_by_tag_name('body').click()
-        #play aduio
-        p = Popen(["aplay", "/home/musicbox/mopidy/ferguson/mopidy_ferguson/sounds/blip_01.wav"], stdout=PIPE, stderr=PIPE)
-        p.communicate()
-        sleep(5)
-        self.driver.find_element_by_id('saveBtn').click()
+    
     
