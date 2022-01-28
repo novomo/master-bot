@@ -43,7 +43,7 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Bot():
     def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
-        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15):
+        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str=""):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK
@@ -66,6 +66,9 @@ class Bot():
             self.tempData = None
             self.headers = {}
             self.session = requests.Session()
+            if proxy != "":
+                self.session.proxies = {'http':  proxy,
+                                        'https': proxy}
 
         if visualBot and not virtualDisplay:
             from scipy.io import wavfile
@@ -127,7 +130,8 @@ class Bot():
             options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
             if headless:
                 options.add_argument('--headless')
-
+            if proxy != "":
+                options.add_argument('--proxy-server=%s' % proxy)
             self.driver = webdriver.Chrome(chrome_options=options)
             self.driver.implicitly_wait(implicitWait)
      
