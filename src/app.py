@@ -12,7 +12,10 @@ from time import sleep
 from random import uniform
 import random
 from typing import List, Dict
+from stem import Signal
+from stem.control import Controller
 
+from secrets import TOR_PASS
 
 requests = None
 BeautifulSoup = None
@@ -58,7 +61,8 @@ class Bot():
         self.virtualDisplay = virtualDisplay
         self.browserProcesses = []
         self.showVirtualDisplay = showVirtualDisplay
-
+        self.proxy = proxy
+        self.headless = headless
         if requestBot:
             import requests
             from bs4 import BeautifulSoup
@@ -112,28 +116,9 @@ class Bot():
             from selenium.webdriver.support.ui import WebDriverWait
             self.seleniumBot = True
             self.By = By
-            
+            self.implicitWait = implicitWait
 
-            options = webdriver.ChromeOptions()
-            # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
-            options.add_argument("--no-sandbox")
-            # chromeOptions.add_argument("--disable-setuid-sandbox")
-
-            options.add_argument("--remote-debugging-port=9222") 
-
-            options.add_argument("--disable-dev-shm-using")
-            # chromeOptions.add_argument("--disable-extensions")
-            # chromeOptions.add_argument("--disable-gpu")
-            # chromeOptions.add_argument("start-maximized")
-            # chromeOptions.add_argument("disable-infobars")
-
-            options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
-            if headless:
-                options.add_argument('--headless')
-            if proxy != "":
-                options.add_argument('--proxy-server=%s' % proxy)
-            self.driver = webdriver.Chrome(chrome_options=options)
-            self.driver.implicitly_wait(implicitWait)
+            self.loadChromedriver()
      
         
             
@@ -214,6 +199,28 @@ class Bot():
     response object
 
     '''
+    
+    def loadChromedriver(self):
+        options = webdriver.ChromeOptions()
+        # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+        options.add_argument("--no-sandbox")
+        # chromeOptions.add_argument("--disable-setuid-sandbox")
+
+        options.add_argument("--remote-debugging-port=9222") 
+
+        options.add_argument("--disable-dev-shm-using")
+        # chromeOptions.add_argument("--disable-extensions")
+        # chromeOptions.add_argument("--disable-gpu")
+        # chromeOptions.add_argument("start-maximized")
+        # chromeOptions.add_argument("disable-infobars")
+
+        options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
+        if self.headless:
+            options.add_argument('--headless')
+        if self.proxy != "":
+            options.add_argument('--proxy-server=%s' % self.proxy)
+        self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver.implicitly_wait(self.implicitWait)
         
 
     def request(self, url: str, data: Dict = {}, headers: Dict = {}, 
@@ -697,4 +704,21 @@ class Bot():
         pyautogui.press('enter')
 
     
-    
+    def renewConnection(self):
+        if self.seleniumBot:
+            self.driver.quit()
+            
+            
+        with Controller.from_port(port = 9051) as controller:
+            controller.authenticate(password=TOR_PASS)
+            controller.signal(Signal.NEWNYM)
+            
+        if self.seleniumBot:
+            self.loadChromedriver()
+        
+        if self.proxy:
+            self.session = None
+            self.session = requests.Session()
+            if self.proxy != "":
+                self.session.proxies = {'http':  self.proxy,
+                                        'https': self.proxy}
