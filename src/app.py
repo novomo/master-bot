@@ -13,7 +13,7 @@ from random import uniform
 import random
 from typing import List, Dict
 from stem import Signal
-from stem.control import Controller
+from stem.control import Controller as Tor
 
 from secrets import TOR_PASS
 
@@ -708,7 +708,7 @@ class Bot():
         if self.seleniumBot:
             self.driver.quit()
             
-        with Controller.from_port(port = 9051) as controller:
+        with Tor.from_port(port = 9051) as controller:
             controller.authenticate(password=TOR_PASS)
             controller.signal(Signal.NEWNYM)
             
