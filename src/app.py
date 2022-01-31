@@ -716,7 +716,7 @@ class Bot():
         if self.seleniumBot:
             self.loadChromedriver()
         
-        if self.proxy:
+        if self.proxy and self.requestBot:
             self.session = None
             self.session = requests.Session()
             if self.proxy != "":
