@@ -704,7 +704,7 @@ class Bot():
         pyautogui.press('enter')
 
     
-    def renewConnection(self):
+    def changeIP(self):
         if self.seleniumBot:
             self.driver.quit()
             
