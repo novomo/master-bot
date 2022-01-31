@@ -708,7 +708,6 @@ class Bot():
         if self.seleniumBot:
             self.driver.quit()
             
-            
         with Controller.from_port(port = 9051) as controller:
             controller.authenticate(password=TOR_PASS)
             controller.signal(Signal.NEWNYM)
