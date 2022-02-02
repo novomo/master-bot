@@ -15,7 +15,7 @@ from typing import List, Dict
 from stem import Signal
 from stem.control import Controller as Tor
 import numpy as np
-from secrets import TOR_PASS
+
 
 requests = None
 BeautifulSoup = None
@@ -46,7 +46,7 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Bot():
     def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
-        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str=""):
+        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str="", torPass: str=""):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK
@@ -63,6 +63,7 @@ class Bot():
         self.showVirtualDisplay = showVirtualDisplay
         self.proxy = proxy
         self.headless = headless
+        self.torPass=torPass
         if requestBot:
             import requests
             from bs4 import BeautifulSoup
@@ -709,7 +710,7 @@ class Bot():
             self.driver.quit()
             
         with Tor.from_port(port = 9051) as controller:
-            controller.authenticate(password=TOR_PASS)
+            controller.authenticate(password=self.torPass)
             controller.signal(Signal.NEWNYM)
             
         if self.seleniumBot:
