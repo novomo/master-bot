@@ -14,7 +14,7 @@ import random
 from typing import List, Dict
 from stem import Signal
 from stem.control import Controller as Tor
-
+import numpy as np
 from secrets import TOR_PASS
 
 requests = None
@@ -465,7 +465,7 @@ class Bot():
     '''
     def imagesearcharea(self, image: str, x1: int,y1: int,x2: int,y2: int, precision: float=0.8, im=None) :
         if im is None :
-            im = region_grabber(region=(x1, y1, x2, y2))
+            im = self.region_grabber(region=(x1, y1, x2, y2))
             #im.save('testarea.png') usefull for debugging purposes, this will save the captured region as "testarea.png"
 
         img_rgb = np.array(im)
@@ -478,13 +478,13 @@ class Bot():
             return [-1, -1]
         return max_loc
 
-    def startBrowserVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
+    def startBrowserVisible(self, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
         if len(extensions) != "":
             os.system(f"{browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
         else: 
             os.system(f"{browser} '{openWebsite}' --no-sandbox")
 
-    def startBrowserNotVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
+    def startBrowserNotVisible(self, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
         if len(extensions) != "":
             os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
         else: 
@@ -574,7 +574,7 @@ class Bot():
     def click_image(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
         img = cv2.imread(image)
         height, width, channels = img.shape
-        pyautogui.moveTo(pos[0] + r(width / 2, offset), pos[1] + r(height / 2,offset),
+        pyautogui.moveTo(pos[0] + (width / 2 + offset), pos[1] + (height / 2 + offset),
                          timestamp)
         pyautogui.click(button=action)
 
@@ -595,11 +595,11 @@ class Bot():
 
     '''
     def imagesearch_loop(self, image: str, timesample: int, precision: float=0.8):
-        pos = imagesearch(image, precision)
+        pos = self.imagesearch(image, precision)
         while pos[0] == -1:
             print(image+" not found, waiting")
-            time.sleep(timesample)
-            pos = imagesearch(image, precision)
+            sleep(timesample)
+            pos = self.imagesearch(image, precision)
         return pos
 
     '''
@@ -616,12 +616,12 @@ class Bot():
 
     '''
     def imagesearch_numLoop(self, image: str, timesample: int, maxSamples: int, precision: int=0.8):
-        pos = imagesearch(image, precision)
+        pos = self.imagesearch(image, precision)
         count = 0
         while pos[0] == -1:
             print(image+" not found, waiting")
-            time.sleep(timesample)
-            pos = imagesearch(image, precision)
+            sleep(timesample)
+            pos = self.imagesearch(image, precision)
             count = count + 1
             if count>maxSamples:
                 break
@@ -645,11 +645,11 @@ class Bot():
     '''
     def imagesearch_region_loop(self, image: str, timesample: int, x1: int, 
                 y1: int, x2: int, y2: int, precision: float=0.8):
-        pos = imagesearcharea(image, x1,y1,x2,y2, precision)
+        pos = self.imagesearcharea(image, x1,y1,x2,y2, precision)
 
         while pos[0] == -1:
-            time.sleep(timesample)
-            pos = imagesearcharea(image, x1, y1, x2, y2, precision)
+            sleep(timesample)
+            pos = self.imagesearcharea(image, x1, y1, x2, y2, precision)
         return pos
 
     '''
