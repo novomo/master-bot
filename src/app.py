@@ -478,14 +478,14 @@ class Bot():
             return [-1, -1]
         return max_loc
 
-    def startBroserVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
-        if len(extensions) != 0:
+    def startBrowserVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
+        if len(extensions) != "":
             os.system(f"{browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
         else: 
             os.system(f"{browser} '{openWebsite}' --no-sandbox")
 
     def startBrowserNotVisible(self, broswer: str, extensions: str="", openWebsite: str="https://www.google.com"):
-        if len(extensions) != 0:
+        if len(extensions) != "":
             os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
         else: 
             os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox")
@@ -496,18 +496,18 @@ class Bot():
         cache.open()
         if cache["chromium-browser"].is_installed:
             if self.virtualDisplay and not self.showVirtualDisplay:
-                startBrowserNotVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserNotVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
             elif self.virtualDisplay and self.showVirtualDisplay:
-                startBroserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                startBroserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
         elif cache["google-chrome-stable"].is_installed:
             if self.virtualDisplay and not self.showVirtualDisplay:
-                startBrowserNotVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserNotVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
             elif self.virtualDisplay and self.showVirtualDisplay:
-                startBroserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                startBroserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
         else:
             print("Please install either chrome or chromium on your computer.")
             sys.exit(1)
