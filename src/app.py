@@ -74,12 +74,14 @@ class Bot():
             if proxy != "":
                 self.session.proxies = {'http':  proxy,
                                         'https': proxy}
-
-        if visualBot and not virtualDisplay:
+                
+        if visualBot:
             from scipy.io import wavfile
             from pynput.keyboard import Controller
             self.keyboard = Controller()
             import pyautogui
+            self.hotKey = pyautogui.hotkey
+            
 
 
         if virtualDisplay:
@@ -89,16 +91,11 @@ class Bot():
         
 
         if virtualDisplay and visualBot:
-            from scipy.io import wavfile
-            from pynput.keyboard import Controller
-            self.keyboard = Controller()
-            import pyautogui
             import Xlib.display as XlibDisplay
             from pyautogui import LEFT, MIDDLE, RIGHT
             from Xlib import X
             from Xlib.ext.xtest import fake_input
             import Xlib.XK as XlibXK
-            self.hotKey = pyautogui.hotkey
             pyautogui._pyautogui_x11._display = XlibDisplay.Display(
                             os.environ['DISPLAY']
                         )
