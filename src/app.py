@@ -569,7 +569,7 @@ class Bot():
     time : time taken for the mouse to move from where it was to the new position
     '''
 
-    def click_image(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
+    def clickImage(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
         img = cv2.imread(image)
         height, width, channels = img.shape
         pyautogui.moveTo(pos[0] + (width / 2 + offset), pos[1] + (height / 2 + offset),
