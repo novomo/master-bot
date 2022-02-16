@@ -170,14 +170,14 @@ class Bot():
 
     '''
 
-    def imagesearch(image: str, precision: float = 0.8):
+    def imagesearch(filename: str, precision: float = 0.8):
         print('printing image path')
-        print(image)
+        print(filename)
         im = pyautogui.screenshot()
         # im.save('testarea.png') usefull for debugging purposes, this will save the captured region as "testarea.png"
         img_rgb = np.array(im)
         img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-        template = cv2.imread(image, 0)
+        template = cv2.imread(filename, 0)
         template.shape[::-1]
 
         res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
