@@ -170,7 +170,7 @@ class Bot():
 
     '''
 
-    def imagesearch(filename: str, precision: float = 0.8):
+    def imagesearch(self, filename: str, precision: float = 0.8):
         print('printing image path')
         print(filename)
         im = pyautogui.screenshot()
