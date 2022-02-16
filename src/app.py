@@ -569,7 +569,7 @@ class Bot():
     time : time taken for the mouse to move from where it was to the new position
     '''
 
-    def clickImage(self, image: str, pos: List[int], action: str, timestamp: int=1,offset: int=5, wait: int=5):
+    def clickImage(self, image: str, wait: int=5):
         pos = self.waitForImage(image, wait=wait)
         if pos[0] != -1:
             width, height = self.loadImageSize(self.imagePath + '/' + image + '.png')
