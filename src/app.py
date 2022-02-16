@@ -81,6 +81,7 @@ class Bot():
             self.keyboard = Controller()
             import pyautogui
             self.hotKey = pyautogui.hotkey
+            self.press = pyautogui.press
             
 
 
@@ -546,6 +547,7 @@ class Bot():
                 pos = self.imagesearch(self.imagePath + '/' + filename + '.png')
             except AttributeError:
                 print("No file named " + filename + ".png in " + self.imagePath)
+                sys.exit(1)
             if pos[0] != -1:
                 return pos
             else:
