@@ -171,6 +171,7 @@ class Bot():
     '''
 
     def imagesearch(image: str, precision: float = 0.8):
+        print(image)
         im = pyautogui.screenshot()
         # im.save('testarea.png') usefull for debugging purposes, this will save the captured region as "testarea.png"
         img_rgb = np.array(im)
