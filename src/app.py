@@ -544,7 +544,7 @@ class Bot():
             except AttributeError:
                 print("No file named " + filename + ".png in " + self.imagePath)
             if pos[0] != -1:
-                return True
+                return pos
             else:
                 currentTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 tdelta = datetime.strptime(currentTime, "%d/%m/%Y %H:%M:%S") - datetime.strptime(startTime,
@@ -569,13 +569,16 @@ class Bot():
     time : time taken for the mouse to move from where it was to the new position
     '''
 
-    def clickImage(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
-        img = cv2.imread(f'{self.imagePath}/{image}.png')
-        height, width, channels = img.shape
-        pyautogui.moveTo(pos[0] + (width / 2 + offset), pos[1] + (height / 2 + offset),
-                         timestamp)
-        pyautogui.click(button=action)
-
+    def clickImage(self, image: str, pos: List[int], action: str, timestamp: int=1,offset: int=5, wait: int=5):
+        pos = self.waitForImage(image, wait=wait)
+        if pos[0] != -1:
+            width, height = self.loadImageSize(self.imagePath + '/' + image + '.png')
+            pyautogui.moveTo(pos[0] + width/2, pos[1] + height/2)
+            pyautogui.click()
+            return True
+        else:
+            sys.exit("Could not file image " + image)
+        
 
     
 
