@@ -572,6 +572,8 @@ class Bot():
     '''
 
     def clickImage(self, image: str, wait: int=5):
+        print('printing click image path')
+        print(image)
         pos = self.waitForImage(image, wait=wait)
         if pos[0] != -1:
             width, height = self.loadImageSize(self.imagePath + '/' + image + '.png')
