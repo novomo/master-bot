@@ -570,7 +570,7 @@ class Bot():
     '''
 
     def clickImage(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
-        img = cv2.imread(image)
+        img = cv2.imread(f'{self.imagePath}/{image}.png')
         height, width, channels = img.shape
         pyautogui.moveTo(pos[0] + (width / 2 + offset), pos[1] + (height / 2 + offset),
                          timestamp)
