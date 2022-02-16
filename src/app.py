@@ -542,6 +542,7 @@ class Bot():
         startTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         while True:
             try:
+                print(self.imagePath + '/' + filename + '.png')
                 pos = self.imagesearch(self.imagePath + '/' + filename + '.png')
             except AttributeError:
                 print("No file named " + filename + ".png in " + self.imagePath)
