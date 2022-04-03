@@ -74,12 +74,15 @@ class Bot():
             if proxy != "":
                 self.session.proxies = {'http':  proxy,
                                         'https': proxy}
-
-        if visualBot and not virtualDisplay:
+                
+        if visualBot:
             from scipy.io import wavfile
             from pynput.keyboard import Controller
             self.keyboard = Controller()
             import pyautogui
+            self.hotKey = pyautogui.hotkey
+            self.press = pyautogui.press
+            
 
 
         if virtualDisplay:
@@ -89,16 +92,11 @@ class Bot():
         
 
         if virtualDisplay and visualBot:
-            from scipy.io import wavfile
-            from pynput.keyboard import Controller
-            self.keyboard = Controller()
-            import pyautogui
             import Xlib.display as XlibDisplay
             from pyautogui import LEFT, MIDDLE, RIGHT
             from Xlib import X
             from Xlib.ext.xtest import fake_input
             import Xlib.XK as XlibXK
-            self.hotKey = pyautogui.hotkey
             pyautogui._pyautogui_x11._display = XlibDisplay.Display(
                             os.environ['DISPLAY']
                         )
@@ -173,12 +171,14 @@ class Bot():
 
     '''
 
-    def imagesearch(image: str, precision: float = 0.8):
+    def imagesearch(self, filename: str, precision: float = 0.8):
+        print('printing image path')
+        print(filename)
         im = pyautogui.screenshot()
         # im.save('testarea.png') usefull for debugging purposes, this will save the captured region as "testarea.png"
         img_rgb = np.array(im)
         img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-        template = cv2.imread(image, 0)
+        template = cv2.imread(filename, 0)
         template.shape[::-1]
 
         res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
@@ -545,11 +545,13 @@ class Bot():
         startTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         while True:
             try:
+                print(self.imagePath + '/' + filename + '.png')
                 pos = self.imagesearch(self.imagePath + '/' + filename + '.png')
             except AttributeError:
                 print("No file named " + filename + ".png in " + self.imagePath)
+                sys.exit(1)
             if pos[0] != -1:
-                return True
+                return pos
             else:
                 currentTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 tdelta = datetime.strptime(currentTime, "%d/%m/%Y %H:%M:%S") - datetime.strptime(startTime,
@@ -574,13 +576,18 @@ class Bot():
     time : time taken for the mouse to move from where it was to the new position
     '''
 
-    def click_image(self, image: str, pos: List[int], action: str, timestamp: int,offset: int=5):
-        img = cv2.imread(image)
-        height, width, channels = img.shape
-        pyautogui.moveTo(pos[0] + (width / 2 + offset), pos[1] + (height / 2 + offset),
-                         timestamp)
-        pyautogui.click(button=action)
-
+    def clickImage(self, image: str, wait: int=5):
+        print('printing click image path')
+        print(image)
+        pos = self.waitForImage(image, wait=wait)
+        if pos[0] != -1:
+            width, height = self.loadImageSize(self.imagePath + '/' + image + '.png')
+            pyautogui.moveTo(pos[0] + width/2, pos[1] + height/2)
+            pyautogui.click()
+            return True
+        else:
+            sys.exit("Could not file image " + image)
+        
 
     
 
