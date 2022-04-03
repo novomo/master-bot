@@ -220,7 +220,9 @@ class Bot():
             options.add_argument('--headless')
         if self.proxy != "":
             options.add_argument('--proxy-server=%s' % self.proxy)
-        self.driver = webdriver.Chrome(chrome_options=options)
+        capabilities = webdriver.DesiredCapabilities.CHROME
+        capabilities["loggingPrefs"] = {"performance": "ALL"}  # newer: goog:loggingPrefs
+        self.driver = webdriver.Chrome(chrome_options=options, desired_capabilities=capabilities)
         self.driver.implicitly_wait(self.implicitWait)
         
 
