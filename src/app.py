@@ -142,6 +142,7 @@ class Bot():
             os.system('killall google-chrome')
         if self.seleniumBot:
             self.driver.quit()
+            os.system('killall chromedriver')
         if self.virtualDisplay:
             self.vDisplay.stop()
             os.system('killall Xvfb')
@@ -155,6 +156,7 @@ class Bot():
             os.system('killall google-chrome')
         if self.seleniumBot:
             self.driver.quit()
+            os.system('killall chromedriver')
         if self.virtualDisplay:
             self.vDisplay.stop()
             os.system('killall Xvfb')
