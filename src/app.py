@@ -39,6 +39,7 @@ RIGHT = None
 X = None
 fake_input = None
 XlibXK = None
+ActionChains = None
 
 
 d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,7 +50,7 @@ class Bot():
         headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str="", torPass: str=""):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
-            X, fake_input, XlibXK
+            X, fake_input, XlibXK, ActionChains
         if showVirtualDisplay > 1:
             print("showVirtualDisplay can only be 0 or 1")
             sys.exit(1)
@@ -113,6 +114,7 @@ class Bot():
             from selenium.webdriver.common.by import By
             from selenium.webdriver.support import expected_conditions as EC
             from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.common.action_chains import ActionChains
             self.seleniumBot = True
             self.By = By
             self.implicitWait = implicitWait
@@ -200,6 +202,10 @@ class Bot():
     response object
 
     '''
+    
+    def webdriverScrollTo(self, element):
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).perform()
     
     def loadChromedriver(self):
         options = webdriver.ChromeOptions()
