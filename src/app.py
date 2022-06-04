@@ -489,36 +489,38 @@ class Bot():
             return [-1, -1]
         return max_loc
 
-    def startBrowserVisible(self, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
+    def startBrowserVisible(self, browserKey: str, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
         if len(extensions) != "":
-            os.system(f"{browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+            proc = Popen([browser, openWebsite, '--no-sandbox', "--load-extension='{extensions}'"])
         else: 
-            os.system(f"{browser} '{openWebsite}' --no-sandbox")
+            proc = Popen([browser, openWebsite, '--no-sandbox'])
+        self.browserPid[browserKey] = proc.id
 
-    def startBrowserNotVisible(self, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
+    def startBrowserNotVisible(self, browserKey: str, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
         if len(extensions) != "":
-            os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox --load-extension='{extensions}'")
+            proc = Popen("xvfb-run", "-a", browser, openWebsite, "--no-sandbox", "--load-extension='{extensions}'")
         else: 
-            os.system(f"xvfb-run -a {browser} '{openWebsite}' --no-sandbox")
+            proc = Popen("xvfb-run", "-a", browser, openWebsite, "--no-sandbox")
+        self.browserPid[browserKey] = proc.id
 
 
-    def startBrowser(self, extensions: str="", openWebsite: str="https://www.google.com"):
+    def startBrowser(self, browserKey: str, extensions: str="", openWebsite: str="https://www.google.com"):
         cache = apt.Cache()
         cache.open()
         if cache["chromium-browser"].is_installed:
             if self.virtualDisplay and not self.showVirtualDisplay:
-                self.startBrowserNotVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserNotVisible(browserKey, 'chromium-browser', extensions=extensions, openWebsite=openWebsite)
             elif self.virtualDisplay and self.showVirtualDisplay:
-                self.startBrowserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible(browserKey, 'chromium-browser', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                self.startBrowserVisible('chromium-browser', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible(browserKey, 'chromium-browser', extensions=extensions, openWebsite=openWebsite)
         elif cache["google-chrome-stable"].is_installed:
             if self.virtualDisplay and not self.showVirtualDisplay:
-                self.startBrowserNotVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserNotVisible(browserKey, 'google-chrome', extensions=extensions, openWebsite=openWebsite)
             elif self.virtualDisplay and self.showVirtualDisplay:
-                self.startBrowserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible(browserKey, 'google-chrome', extensions=extensions, openWebsite=openWebsite)
             elif not self.virtualDisplay:
-                self.startBrowserVisible('google-chrome', extensions=extensions, openWebsite=openWebsite)
+                self.startBrowserVisible(browserKey, 'google-chrome', extensions=extensions, openWebsite=openWebsite)
         else:
             print("Please install either chrome or chromium on your computer.")
             sys.exit(1)
