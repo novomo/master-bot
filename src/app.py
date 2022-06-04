@@ -494,14 +494,14 @@ class Bot():
             proc = Popen([browser, openWebsite, '--no-sandbox', "--load-extension='{extensions}'"])
         else: 
             proc = Popen([browser, openWebsite, '--no-sandbox'])
-        self.browserPid[browserKey] = proc.id
+        self.browserPid[browserKey] = proc
 
     def startBrowserNotVisible(self, browserKey: str, browser: str, extensions: str="", openWebsite: str="https://www.google.com"):
         if len(extensions) != "":
             proc = Popen("xvfb-run", "-a", browser, openWebsite, "--no-sandbox", "--load-extension='{extensions}'")
         else: 
             proc = Popen("xvfb-run", "-a", browser, openWebsite, "--no-sandbox")
-        self.browserPid[browserKey] = proc.id
+        self.browserPid[browserKey] = proc
 
 
     def startBrowser(self, browserKey: str, extensions: str="", openWebsite: str="https://www.google.com"):
