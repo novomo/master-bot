@@ -201,7 +201,7 @@ class Bot():
     data : JSON data to be sent with request
     headers : If request headers need to be different from stored headers
 
-    output:
+    output: 
 
     response object
 
