@@ -211,7 +211,7 @@ class Bot():
         actions = ActionChains(self.drivers[driverKey])
         actions.move_to_element(element).perform()
     
-    def loadChromedriver(self, key: str='preload', options: Dict = {}):
+    def loadChromedriver(self, key: str='preload', opts: Dict = {}):
         options = webdriver.ChromeOptions()
         # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
         options.add_argument("--no-sandbox")
@@ -226,11 +226,11 @@ class Bot():
         # chromeOptions.add_argument("disable-infobars")
 
         options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
-        if 'headless' in options and options['headless'] is True:
+        if 'headless' in opts and opts['headless'] is True:
             options.add_argument('--headless')
         elif self.headless:
             options.add_argument('--headless')
-        if 'proxy' in options and options['proxy'] != "":
+        if 'proxy' in opts and opts['proxy'] != "":
             options.add_argument('--proxy-server=%s' % options['proxy'])
         if self.proxy != "":
             options.add_argument('--proxy-server=%s' % self.proxy)
