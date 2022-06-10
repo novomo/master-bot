@@ -231,7 +231,7 @@ class Bot():
         elif self.headless:
             options.add_argument('--headless')
         if 'proxy' in opts and opts['proxy'] != "":
-            options.add_argument('--proxy-server=%s' % options['proxy'])
+            options.add_argument('--proxy-server=%s' % opts['proxy'])
         if self.proxy != "":
             options.add_argument('--proxy-server=%s' % self.proxy)
         capabilities = webdriver.DesiredCapabilities.CHROME
