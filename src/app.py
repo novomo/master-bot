@@ -47,14 +47,14 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Bot():
     def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
-        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str="", torPass: str=""):
+        headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str="", torPass: str="", loadChrome: bool=True):
         global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK, ActionChains
         if showVirtualDisplay > 1:
             print("showVirtualDisplay can only be 0 or 1")
             sys.exit(1)
-
+        self.drivers = {}
         self.imagePath = imagePath
         self.visualBot = visualBot
         self.seleniumBot = seleniumBot
@@ -118,8 +118,8 @@ class Bot():
             self.seleniumBot = True
             self.By = By
             self.implicitWait = implicitWait
-
-            self.loadChromedriver()
+            if loadChrome:
+                self.loadChromedriver()
      
         
             
@@ -141,7 +141,8 @@ class Bot():
             os.system('killall chrome')
             os.system('killall google-chrome')
         if self.seleniumBot:
-            self.driver.quit()
+            for key, value in self.drivers.items():
+                self.drivers[key].quit()
             os.system('killall chromedriver')
         if self.virtualDisplay:
             self.vDisplay.stop()
@@ -155,7 +156,8 @@ class Bot():
             os.system('killall chrome')
             os.system('killall google-chrome')
         if self.seleniumBot:
-            self.driver.quit()
+            for key, value in self.drivers.items():
+                self.drivers[key].quit()
             os.system('killall chromedriver')
         if self.virtualDisplay:
             self.vDisplay.stop()
@@ -205,11 +207,11 @@ class Bot():
 
     '''
     
-    def webdriverScrollTo(self, element):
-        actions = ActionChains(self.driver)
+    def webdriverScrollTo(self, element, driverKey='preload'):
+        actions = ActionChains(self.drivers[driverKey])
         actions.move_to_element(element).perform()
     
-    def loadChromedriver(self):
+    def loadChromedriver(self, key: str='preload', options: Dict = {}):
         options = webdriver.ChromeOptions()
         # chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
         options.add_argument("--no-sandbox")
@@ -224,14 +226,18 @@ class Bot():
         # chromeOptions.add_argument("disable-infobars")
 
         options.add_argument("user-data-dir=/home/{}/.config/google-chrome/default".format(getpass.getuser()))
-        if self.headless:
+        if 'headless' in options and options['headless'] is True:
             options.add_argument('--headless')
+        elif self.headless:
+            options.add_argument('--headless')
+        if 'proxy' in options and options['proxy'] != "":
+            options.add_argument('--proxy-server=%s' % options['proxy'])
         if self.proxy != "":
             options.add_argument('--proxy-server=%s' % self.proxy)
         capabilities = webdriver.DesiredCapabilities.CHROME
         capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # newer: goog:loggingPrefs
-        self.driver = webdriver.Chrome(chrome_options=options, desired_capabilities=capabilities)
-        self.driver.implicitly_wait(self.implicitWait)
+        self.drivers[key] = webdriver.Chrome(chrome_options=options, desired_capabilities=capabilities)
+        self.drivers[key].implicitly_wait(self.implicitWait)
         
 
     def request(self, url: str, data: Dict = {}, headers: Dict = {}, 
@@ -330,15 +336,15 @@ class Bot():
 
     ''' 
 
-    def headlessWaitForElement(self, criteia: str, selector: str, by, waitTime: int = 20):
+    def headlessWaitForElement(self, criteia: str, selector: str, by, waitTime: int = 20, driverKey: str='preload'):
         if criteia == "present":
-            return WebDriverWait(self.driver, waitTime).until(
+            return WebDriverWait(self.drivers[driverKey], waitTime).until(
                 EC.presence_of_element_located((by, selector)))
         elif criteia == "visible":
-            return WebDriverWait(self.driver, waitTime).until(
+            return WebDriverWait(self.drivers[driverKey], waitTime).until(
                 EC.visibility_of_element_located((by, selector)))
         elif criteia == "clickable":
-            return WebDriverWait(self.driver, waitTime).until(
+            return WebDriverWait(self.drivers[driverKey], waitTime).until(
                 EC.element_to_be_clickable((by, selector)))
 
     '''
@@ -356,12 +362,12 @@ class Bot():
     list of slenium elements
     ''' 
 
-    def headlessWaitForElements(self, criteia: str, selector: str, by, waitTime: int=20):
+    def headlessWaitForElements(self, criteia: str, selector: str, by, waitTime: int=20, driverKey: str='preload'):
         if criteia == "present":
-            return WebDriverWait(self.driver, waitTime).until(
+            return WebDriverWait(self.drivers[driverKey], waitTime).until(
                 EC.presence_of_all_elements_located((by, selector)))
         elif criteia == "visible":
-            return WebDriverWait(self.driver, waitTime).until(
+            return WebDriverWait(self.drivers[driverKey], waitTime).until(
                 EC.visibility_of_all_elements_located((by, selector)))
 
     '''
@@ -378,8 +384,8 @@ class Bot():
 
     ''' 
 
-    def headlessSwitchToIFrame(self, by, selector: str, waitTime: int=20):
-        WebDriverWait(self.driver, waitTime).until(EC.frame_to_be_available_and_switch_to_it((by, selector)))
+    def headlessSwitchToIFrame(self, by, selector: str, waitTime: int=20, driverKey: str='preload'):
+        WebDriverWait(self.drivers[driverKey], waitTime).until(EC.frame_to_be_available_and_switch_to_it((by, selector)))
 
     '''
 
@@ -724,9 +730,9 @@ class Bot():
         pyautogui.press('enter')
 
     
-    def changeIP(self):
+    def changeIP(self, driverKey: str="preload"):
         if self.seleniumBot:
-            self.driver.quit()
+            self.drivers[driverKey].quit()
             
         with Tor.from_port(port = 9051) as controller:
             controller.authenticate(password=self.torPass)
