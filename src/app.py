@@ -730,7 +730,7 @@ class Bot():
         pyautogui.press('enter')
 
     
-    def changeIP(self, driverKey: str="preload"):
+    def changeIP(self, driverKey: str="preload", opts: Dict={}):
         if self.seleniumBot:
             self.drivers[driverKey].quit()
             
@@ -739,7 +739,7 @@ class Bot():
             controller.signal(Signal.NEWNYM)
             
         if self.seleniumBot:
-            self.loadChromedriver()
+            self.loadChromedriver(ke=driverKey, opts=opts)
         
         if self.proxy and self.requestBot:
             self.session = None
