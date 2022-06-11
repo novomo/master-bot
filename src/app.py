@@ -739,7 +739,7 @@ class Bot():
             controller.signal(Signal.NEWNYM)
             
         if self.seleniumBot:
-            self.loadChromedriver(ke=driverKey, opts=opts)
+            self.loadChromedriver(key=driverKey, opts=opts)
         
         if self.proxy and self.requestBot:
             self.session = None
