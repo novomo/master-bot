@@ -48,7 +48,7 @@ d = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class Bot():
     def __init__(self, requestBot: bool=False, seleniumBot: bool=False, visualBot: bool=False, 
         headless: bool=False, imagePath: str=f"{d}/images", virtualDisplay: bool=False, showVirtualDisplay: int=1, implicitWait: int=15, proxy: str="", torPass: str="", loadChrome: bool=True):
-        global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, \
+        global requests, BeautifulSoup, webdriver, Keys, Options, By, EC, WebDriverWait, Image, 
             cv2, pyautogui, wavfile, Controller, audio, XlibDisplay, Display, MIDDLE, LEFT, RIGHT, \
             X, fake_input, XlibXK, ActionChains
         if showVirtualDisplay > 1:
